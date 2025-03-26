@@ -37,6 +37,12 @@ defmodule Tunez.Music.Artist do
 
   end
 
+# Context: Adding a rsort for the albums relatinoship
+relationships do
+  has_many :albums, Tunez.Music.Album do
+    sort year_released: :desc
+  end
+end
 
 
 end
