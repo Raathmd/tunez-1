@@ -2,7 +2,7 @@ defmodule TunezWeb.Albums.FormLive do
   use TunezWeb, :live_view
 
   def mount(%{"id" => album_id}, _session, socket) do
-    album = Tunez.Music.get_album_by_id!(album_id)
+    album = Tunez.Music.get_album_by_id!(album_id, load: [:artist])
     artist = Tunez.Music.get_artist_by_id!( album.artist_id)
     form = Tunez.Music.form_to_update_album(album)
 
@@ -29,6 +29,7 @@ defmodule TunezWeb.Albums.FormLive do
   end
 
   def mount(_params, _session, socket) do
+
     form = Tunez.Music.form_to_create_album()
 
     socket =
@@ -39,12 +40,25 @@ defmodule TunezWeb.Albums.FormLive do
     {:ok, socket}
   end
 
-  def handle_params(%{"id" => artist_id}, _url, socket) do
+  def handle_params(%{"artist_id" => artist_id}, _url, socket) do
     artist = Tunez.Music.get_artist_by_id!(artist_id, load: [:albums])
 
     socket =
       socket
       |> assign(:artist, artist)
+      |> assign(:page_title, artist.name)
+
+    {:noreply, socket}
+  end
+
+
+  def handle_params(%{"id" => album_id}, _url, socket) do
+    album = Tunez.Music.get_album_by_id!(album_id, load: [:artist])
+    artist = Tunez.Music.get_artist_by_id!(album.artist.id)
+    socket =
+      socket
+      |> assign(:artist, artist)
+      |> assign(:album, album)
       |> assign(:page_title, artist.name)
 
     {:noreply, socket}
@@ -145,6 +159,7 @@ end
 # ------------------------------------------------------------------------------
 # Context: Implementing the logic to save form data on submit
 def handle_event("save", %{"form" => form_data}, socket) do
+  IO.inspect(socket, label: "socket**************")
   case AshPhoenix.Form.submit(socket.assigns.form, params: form_data) do
     {:ok, album} ->
       socket =
