@@ -26,6 +26,10 @@ defmodule Tunez.Music.Album do
       end
     end
 
+    validations do
+
+    end
+
 
     actions do
       defaults [:read, :destroy]
